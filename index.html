@@ -275,13 +275,33 @@
             if(btn) btn.style.display = 'none';
         }
 
-        // Optional logic for the fidget button if you want it to do more than just CSS
-        function playFidget() {
-            // Right now, the CSS handles the visual "squish" and color change automatically!
-            // You can add sounds or a vibration effect here later if you want.
+       // --- Fidget Button Logic ---
+        const fidgetBtn = document.getElementById('fidget-btn');
+
+        function pressDown(e) {
+            e.preventDefault(); // Stops the screen from scrolling or highlighting
+            fidgetBtn.classList.add('pressed');
+            
+            // Trigger instant vibration on Android
             if (navigator.vibrate) {
-                navigator.vibrate(50); // Gives a tiny physical buzz on Android phones
+                navigator.vibrate(40); 
             }
+        }
+
+        function releaseUp(e) {
+            e.preventDefault();
+            fidgetBtn.classList.remove('pressed');
+        }
+
+        // Mobile Touch Events (Instantaneous)
+        fidgetBtn.addEventListener('touchstart', pressDown, { passive: false });
+        fidgetBtn.addEventListener('touchend', releaseUp);
+        fidgetBtn.addEventListener('touchcancel', releaseUp);
+
+        // Desktop Mouse Events (For when you test on your computer)
+        fidgetBtn.addEventListener('mousedown', pressDown);
+        fidgetBtn.addEventListener('mouseup', releaseUp);
+        fidgetBtn.addEventListener('mouseleave', releaseUp); // Un-presses if you drag your mouse away
         }
 
         getWorkout();
