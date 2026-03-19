@@ -1,0 +1,56 @@
+<style>
+    /* ... previous styles ... */
+
+    .complete-btn {
+        margin-top: 40px;
+        padding: 10px 20px;
+        font-family: 'Indie Flower', cursive;
+        font-size: 1.2rem;
+        background: transparent;
+        border: 2px solid #2c3e50;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.2s;
+    }
+
+    .complete-btn:active {
+        transform: scale(0.95);
+        background: #e0d9c5;
+    }
+
+    /* The "Done" Stamp */
+    #done-stamp {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-15deg);
+        font-size: 8rem;
+        color: rgba(255, 0, 0, 0.4); /* Faded red ink look */
+        border: 8px solid rgba(255, 0, 0, 0.4);
+        padding: 10px 30px;
+        font-family: 'Arial Black', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        display: none; /* Hidden by default */
+        pointer-events: none; /* So it doesn't block clicks */
+        z-index: 20;
+    }
+
+    /* Visual change when completed */
+    .completed .workout {
+        text-decoration: line-through;
+        opacity: 0.5;
+    }
+</style>
+
+<div class="notebook-page" id="page">
+    <div id="done-stamp">DONE</div>
+    <div id="week-display" class="week-marker">Week --</div>
+    <div class="content">
+        <p id="current-date">Loading...</p>
+        <h1>Today's Run:</h1>
+        <div id="workout-display" class="workout">Loading...</div>
+        
+        <button class="complete-btn" onclick="markComplete()">Mark Finished</button>
+    </div>
+</div>
