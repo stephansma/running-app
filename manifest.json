@@ -1,5 +1,5 @@
 {
-  "name": "Run Tracker Notebook",
+  "name": "My Run Notebook",
   "short_name": "My Runs",
   "start_url": "index.html",
   "display": "standalone",
@@ -7,9 +7,16 @@
   "theme_color": "#fffef0",
   "icons": [
     {
-      "src": "https://img.icons8.com/ink/150/journal.png",
-      "sizes": "150x150",
-      "type": "image/png"
+      "src": "icon-android.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-android.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
