@@ -1,45 +1,15 @@
-<script>
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSbl_xaZcx_GJkfZJTDnOyty3qgwBKSvU-dcAAf-zg0Afq-mxOCEf_tBPgjf5u6sT2c3DgVbHGRHxTt/pub?output=csv';
-
-    async function getWorkout() {
-        const today = new Date().toLocaleDateString();
-        document.getElementById('current-date').innerText = today;
-
-        // Check if already completed today
-        if (localStorage.getItem('completed_' + today)) {
-            showCompletionUI();
-        }
-
-        try {
-            const response = await fetch(SHEET_URL);
-            const data = await response.text();
-            const rows = data.split('\n').map(row => row.split(','));
-            const match = rows.find(row => row[0].trim() === today);
-
-            if (match) {
-                document.getElementById('workout-display').innerText = match[1];
-                document.getElementById('week-display').innerText = match[2] || "Active";
-            } else {
-                document.getElementById('workout-display').innerText = "Rest Day! ☕";
-                document.getElementById('week-display').innerText = "Relax";
-            }
-        } catch (e) {
-            document.getElementById('workout-display').innerText = "Connection Error";
-        }
+{
+  "name": "Run Tracker Notebook",
+  "short_name": "My Runs",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#333333",
+  "theme_color": "#fffef0",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/ink/150/journal.png",
+      "sizes": "150x150",
+      "type": "image/png"
     }
-
-    function markComplete() {
-        const today = new Date().toLocaleDateString();
-        localStorage.setItem('completed_' + today, 'true');
-        showCompletionUI();
-    }
-
-    function showCompletionUI() {
-        document.getElementById('page').classList.add('completed');
-        document.getElementById('done-stamp').style.display = 'block';
-        // Optional: Hide the button once clicked
-        document.querySelector('.complete-btn').style.display = 'none';
-    }
-
-    getWorkout();
-</script>
+  ]
+}
