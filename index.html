@@ -31,10 +31,11 @@
             box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
             width: 85%;
             max-width: 400px;
-            min-height: 400px;
+            min-height: 450px;
             position: relative;
             background-image: repeating-linear-gradient(transparent, transparent 30px, var(--line-color) 30px, var(--line-color) 31px);
             line-height: 31px;
+            overflow: hidden; /* Keeps the stamp from overflowing */
         }
 
         .notebook-page::before {
@@ -56,25 +57,37 @@
         h1 { 
             font-family: 'Indie Flower', cursive;
             color: #2c3e50; 
-            margin: 0 0 1rem 0;
+            margin: 0 0 0.5rem 0;
             text-decoration: underline;
             font-size: 2.2rem;
             margin-top: 1.5rem;
         }
 
+        h2 {
+            font-family: 'Indie Flower', cursive;
+            color: #7f8c8d;
+            margin: 2rem 0 0.2rem 0;
+            font-size: 1.5rem;
+        }
+
         p#current-date { 
             font-size: 1.1rem; 
             color: #7f8c8d; 
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         .workout { 
             font-weight: 700; 
             font-size: 1.6rem; 
             color: #1a1a1a; 
-            margin-top: 20px;
             transform: rotate(-1deg); 
             line-height: 1.4;
+        }
+
+        .tomorrow-workout {
+            font-size: 1.3rem;
+            color: #555;
+            transform: rotate(1deg);
         }
 
         .week-marker {
@@ -94,7 +107,7 @@
         }
 
         .complete-btn {
-            margin-top: 40px;
+            margin-top: 30px;
             padding: 10px 20px;
             font-family: 'Indie Flower', cursive;
             font-size: 1.2rem;
@@ -112,7 +125,7 @@
 
         #done-stamp {
             position: absolute;
-            top: 50%;
+            top: 40%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-15deg);
             font-size: 6rem;
@@ -131,33 +144,70 @@
             text-decoration: line-through;
             opacity: 0.5;
         }
+
+        /* The Fidget Button! */
+        .fidget {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background: #87CEEB; /* Sky blue sticker */
+            border-radius: 50%;
+            border: 2px solid #2c3e50;
+            box-shadow: 3px 3px 0px #2c3e50;
+            cursor: pointer;
+            z-index: 15;
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            user-select: none; /* Prevents highlighting text when mashing */
+        }
+
+        /* The "Pressed" state */
+        .fidget:active {
+            transform: translate(3px, 3px) rotate(15deg);
+            box-shadow: 0px 0px 0px #2c3e50;
+            background: #ffadad; /* Changes color when squeezed */
+        }
     </style>
 </head>
 <body>
     <div class="notebook-page" id="page">
         <div id="done-stamp">DONE</div>
         <div id="week-display" class="week-marker">Week --</div>
+        
+        <div class="fidget" onclick="playFidget()">🌀</div>
+
         <div class="content">
             <p id="current-date">Loading...</p>
-            <h1>Today's Run:</h1>
-            <div id="workout-display" class="workout">Loading...</div>
             
+            <h1>Today:</h1>
+            <div id="workout-display" class="workout">Loading...</div>
             <button class="complete-btn" onclick="markComplete()">Mark Finished</button>
+
+            <h2>Tomorrow:</h2>
+            <div id="tomorrow-display" class="tomorrow-workout">Loading...</div>
         </div>
     </div>
 
     <script>
-        // Looking specifically for the file you uploaded
         const SHEET_URL = 'schedule.csv';
 
         async function getWorkout() {
-            // This explicitly formats the date as M/D/YYYY to match your file perfectly 
+            // Get Today
             const d = new Date();
             const today = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
             
+            // Get Tomorrow
+            const t = new Date(d);
+            t.setDate(t.getDate() + 1); // Automatically handles month/year rollover
+            const tomorrow = (t.getMonth() + 1) + '/' + t.getDate() + '/' + t.getFullYear();
+            
             document.getElementById('current-date').innerText = "Date: " + today;
 
-            // Check if already completed today
             if (localStorage.getItem('completed_' + today)) {
                 showCompletionUI();
             }
@@ -169,34 +219,40 @@
                 const data = await response.text();
                 const rows = data.split('\n');
                 
-                let foundMatch = null;
+                let todayMatch = null;
+                let tomorrowMatch = null;
 
-                for (let i = 1; i < rows.length; i++) { // Start at 1 to skip the header row
+                for (let i = 1; i < rows.length; i++) { 
                     const cols = rows[i].split(',');
-                    // Look for today's date in Column A
-                    if (cols.length >= 3 && cols[0].trim() === today) {
-                        foundMatch = cols;
-                        break;
+                    if (cols.length >= 3) {
+                        if (cols[0].trim() === today) todayMatch = cols;
+                        if (cols[0].trim() === tomorrow) tomorrowMatch = cols;
                     }
                 }
 
-                if (foundMatch) {
-                    // Column B (Index 1) is your Week Number
-                    document.getElementById('week-display').innerText = "Week " + foundMatch[1].trim();
-                    
-                    // Column C (Index 2) and beyond is your Workout
-                    // This slice/join logic makes sure that if your workout description 
-                    // has commas in it, it doesn't accidentally get cut in half.
-                    const workoutText = foundMatch.slice(2).join(',').replace(/"/g, '').trim();
+                // Populate Today
+                if (todayMatch) {
+                    document.getElementById('week-display').innerText = "Week " + todayMatch[1].trim();
+                    const workoutText = todayMatch.slice(2).join(',').replace(/"/g, '').trim();
                     document.getElementById('workout-display').innerText = workoutText;
-                    
                 } else {
                     document.getElementById('workout-display').innerText = "Rest Day! ☕";
-                    document.getElementById('week-display').innerText = "Relax";
+                    // If no run today, try to get the week from tomorrow's run so the sticky note isn't blank
+                    if(tomorrowMatch) document.getElementById('week-display').innerText = "Week " + tomorrowMatch[1].trim();
                 }
+
+                // Populate Tomorrow
+                if (tomorrowMatch) {
+                    const tomWorkoutText = tomorrowMatch.slice(2).join(',').replace(/"/g, '').trim();
+                    document.getElementById('tomorrow-display').innerText = tomWorkoutText;
+                } else {
+                    document.getElementById('tomorrow-display').innerText = "Rest Day! 💤";
+                }
+
             } catch (e) {
                 console.error(e);
                 document.getElementById('workout-display').innerText = "Could not find schedule.csv";
+                document.getElementById('tomorrow-display').innerText = "---";
             }
         }
 
@@ -212,6 +268,15 @@
             document.getElementById('done-stamp').style.display = 'block';
             const btn = document.querySelector('.complete-btn');
             if(btn) btn.style.display = 'none';
+        }
+
+        // Optional logic for the fidget button if you want it to do more than just CSS
+        function playFidget() {
+            // Right now, the CSS handles the visual "squish" and color change automatically!
+            // You can add sounds or a vibration effect here later if you want.
+            if (navigator.vibrate) {
+                navigator.vibrate(50); // Gives a tiny physical buzz on Android phones
+            }
         }
 
         getWorkout();
