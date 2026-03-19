@@ -1,56 +1,220 @@
-<style>
-    /* ... previous styles ... */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/ink/150/journal.png">
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper-color: #fffef0;
+            --line-color: #e0d9c5;
+            --margin-line: #ffadad;
+        }
 
-    .complete-btn {
-        margin-top: 40px;
-        padding: 10px 20px;
-        font-family: 'Indie Flower', cursive;
-        font-size: 1.2rem;
-        background: transparent;
-        border: 2px solid #2c3e50;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: all 0.2s;
-    }
+        body { 
+            font-family: 'Kalam', cursive; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            background: #333; 
+        }
 
-    .complete-btn:active {
-        transform: scale(0.95);
-        background: #e0d9c5;
-    }
+        .notebook-page { 
+            background: var(--paper-color); 
+            padding: 3rem 2rem; 
+            border-radius: 5px; 
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+            width: 85%;
+            max-width: 400px;
+            min-height: 400px;
+            position: relative;
+            background-image: repeating-linear-gradient(transparent, transparent 30px, var(--line-color) 30px, var(--line-color) 31px);
+            line-height: 31px;
+        }
 
-    /* The "Done" Stamp */
-    #done-stamp {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-15deg);
-        font-size: 8rem;
-        color: rgba(255, 0, 0, 0.4); /* Faded red ink look */
-        border: 8px solid rgba(255, 0, 0, 0.4);
-        padding: 10px 30px;
-        font-family: 'Arial Black', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 5px;
-        display: none; /* Hidden by default */
-        pointer-events: none; /* So it doesn't block clicks */
-        z-index: 20;
-    }
+        .notebook-page::before {
+            content: '';
+            position: absolute;
+            left: 40px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--margin-line);
+        }
 
-    /* Visual change when completed */
-    .completed .workout {
-        text-decoration: line-through;
-        opacity: 0.5;
-    }
-</style>
+        .content {
+            position: relative;
+            padding-left: 30px; 
+            z-index: 1;
+        }
 
-<div class="notebook-page" id="page">
-    <div id="done-stamp">DONE</div>
-    <div id="week-display" class="week-marker">Week --</div>
-    <div class="content">
-        <p id="current-date">Loading...</p>
-        <h1>Today's Run:</h1>
-        <div id="workout-display" class="workout">Loading...</div>
-        
-        <button class="complete-btn" onclick="markComplete()">Mark Finished</button>
+        h1 { 
+            font-family: 'Indie Flower', cursive;
+            color: #2c3e50; 
+            margin: 0 0 1rem 0;
+            text-decoration: underline;
+            font-size: 2.2rem;
+            margin-top: 1.5rem;
+        }
+
+        p#current-date { 
+            font-size: 1.1rem; 
+            color: #7f8c8d; 
+            margin-bottom: 2rem;
+        }
+
+        .workout { 
+            font-weight: 700; 
+            font-size: 1.6rem; 
+            color: #1a1a1a; 
+            margin-top: 20px;
+            transform: rotate(-1deg); 
+            line-height: 1.4;
+        }
+
+        .week-marker {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #ffeb3b; 
+            padding: 5px 15px;
+            transform: rotate(3deg);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            font-weight: bold;
+            color: #333;
+            border: 1px solid #f9d71c;
+            z-index: 10;
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.2rem;
+        }
+
+        .complete-btn {
+            margin-top: 40px;
+            padding: 10px 20px;
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.2rem;
+            background: transparent;
+            border: 2px solid #2c3e50;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .complete-btn:active {
+            transform: scale(0.95);
+            background: #e0d9c5;
+        }
+
+        #done-stamp {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 6rem;
+            color: rgba(255, 0, 0, 0.4); 
+            border: 8px solid rgba(255, 0, 0, 0.4);
+            padding: 10px 30px;
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            display: none; 
+            pointer-events: none; 
+            z-index: 20;
+        }
+
+        .completed .workout {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="notebook-page" id="page">
+        <div id="done-stamp">DONE</div>
+        <div id="week-display" class="week-marker">Week --</div>
+        <div class="content">
+            <p id="current-date">Loading...</p>
+            <h1>Today's Run:</h1>
+            <div id="workout-display" class="workout">Loading...</div>
+            
+            <button class="complete-btn" onclick="markComplete()">Mark Finished</button>
+        </div>
     </div>
-</div>
+
+    <script>
+        // Looking specifically for the file you uploaded
+        const SHEET_URL = 'schedule.csv';
+
+        async function getWorkout() {
+            // This explicitly formats the date as M/D/YYYY to match your file perfectly 
+            const d = new Date();
+            const today = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+            
+            document.getElementById('current-date').innerText = "Date: " + today;
+
+            // Check if already completed today
+            if (localStorage.getItem('completed_' + today)) {
+                showCompletionUI();
+            }
+
+            try {
+                const response = await fetch(SHEET_URL);
+                if (!response.ok) throw new Error("File not found");
+                
+                const data = await response.text();
+                const rows = data.split('\n');
+                
+                let foundMatch = null;
+
+                for (let i = 1; i < rows.length; i++) { // Start at 1 to skip the header row
+                    const cols = rows[i].split(',');
+                    // Look for today's date in Column A
+                    if (cols.length >= 3 && cols[0].trim() === today) {
+                        foundMatch = cols;
+                        break;
+                    }
+                }
+
+                if (foundMatch) {
+                    // Column B (Index 1) is your Week Number
+                    document.getElementById('week-display').innerText = "Week " + foundMatch[1].trim();
+                    
+                    // Column C (Index 2) and beyond is your Workout
+                    // This slice/join logic makes sure that if your workout description 
+                    // has commas in it, it doesn't accidentally get cut in half.
+                    const workoutText = foundMatch.slice(2).join(',').replace(/"/g, '').trim();
+                    document.getElementById('workout-display').innerText = workoutText;
+                    
+                } else {
+                    document.getElementById('workout-display').innerText = "Rest Day! ☕";
+                    document.getElementById('week-display').innerText = "Relax";
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('workout-display').innerText = "Could not find schedule.csv";
+            }
+        }
+
+        function markComplete() {
+            const d = new Date();
+            const today = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+            localStorage.setItem('completed_' + today, 'true');
+            showCompletionUI();
+        }
+
+        function showCompletionUI() {
+            document.getElementById('page').classList.add('completed');
+            document.getElementById('done-stamp').style.display = 'block';
+            const btn = document.querySelector('.complete-btn');
+            if(btn) btn.style.display = 'none';
+        }
+
+        getWorkout();
+    </script>
+</body>
+</html>
