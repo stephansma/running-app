@@ -1,5 +1,5 @@
 <script>
-    const SHEET_URL = 'YOUR_CSV_LINK_HERE';
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSbl_xaZcx_GJkfZJTDnOyty3qgwBKSvU-dcAAf-zg0Afq-mxOCEf_tBPgjf5u6sT2c3DgVbHGRHxTt/pub?output=csv';
 
     async function getWorkout() {
         const today = new Date().toLocaleDateString();
