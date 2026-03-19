@@ -1,0 +1,45 @@
+<script>
+    const SHEET_URL = 'YOUR_CSV_LINK_HERE';
+
+    async function getWorkout() {
+        const today = new Date().toLocaleDateString();
+        document.getElementById('current-date').innerText = today;
+
+        // Check if already completed today
+        if (localStorage.getItem('completed_' + today)) {
+            showCompletionUI();
+        }
+
+        try {
+            const response = await fetch(SHEET_URL);
+            const data = await response.text();
+            const rows = data.split('\n').map(row => row.split(','));
+            const match = rows.find(row => row[0].trim() === today);
+
+            if (match) {
+                document.getElementById('workout-display').innerText = match[1];
+                document.getElementById('week-display').innerText = match[2] || "Active";
+            } else {
+                document.getElementById('workout-display').innerText = "Rest Day! ☕";
+                document.getElementById('week-display').innerText = "Relax";
+            }
+        } catch (e) {
+            document.getElementById('workout-display').innerText = "Connection Error";
+        }
+    }
+
+    function markComplete() {
+        const today = new Date().toLocaleDateString();
+        localStorage.setItem('completed_' + today, 'true');
+        showCompletionUI();
+    }
+
+    function showCompletionUI() {
+        document.getElementById('page').classList.add('completed');
+        document.getElementById('done-stamp').style.display = 'block';
+        // Optional: Hide the button once clicked
+        document.querySelector('.complete-btn').style.display = 'none';
+    }
+
+    getWorkout();
+</script>
