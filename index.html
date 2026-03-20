@@ -103,7 +103,6 @@
             font-size: 1.5rem;
         }
 
-        /* --- NEW: Wraps the workout text so the stamp stays confined --- */
         .workout-container {
             position: relative;
             width: 100%;
@@ -134,12 +133,9 @@
             pointer-events: none; 
             z-index: 20;
             mix-blend-mode: multiply; 
-            
-            /* Applies the subtle ink bleed to the letters themselves */
             text-shadow: 0px 0px 3px rgba(192, 57, 43, 0.5); 
         }
 
-        /* The slam animation */
         .completed #done-stamp {
             animation: stamp-slam 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
@@ -199,7 +195,7 @@
             background: rgba(255, 255, 255, 0.6);
             padding: 15px;
             border-radius: 8px;
-            border: 2px dashed #bdc3c7; /* Stronger border to separate the form */
+            border: 2px dashed #bdc3c7; 
         }
 
         .log-input-row {
@@ -242,19 +238,18 @@
             filter: grayscale(0%);
         }
 
-        /* --- NEW: Visually Popping Save Log Button --- */
         .save-log-btn {
             font-family: 'Indie Flower', cursive;
             font-size: 1.2rem;
             font-weight: bold;
-            background: #27ae60; /* Vibrant Green */
+            background: #27ae60; 
             color: #fffef0;
             border: 2px solid #2ecc71;
             padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
-            box-shadow: 3px 3px 0px rgba(46, 204, 113, 0.3); /* Physical button shadow */
+            box-shadow: 3px 3px 0px rgba(46, 204, 113, 0.3); 
             transition: all 0.1s;
         }
 
@@ -270,27 +265,28 @@
             margin-top: 15px;
             display: none;
             transform: rotate(-1deg);
+            line-height: 1.4; /* Gives a little breathing room between lines */
         }
 
-		/* --- Transparent Undo Button --- */
+        /* --- Transparent Undo Button --- */
         .undo-btn {
             margin-top: 15px;
             padding: 5px 10px;
             font-family: 'Indie Flower', cursive;
             font-size: 1.1rem;
             font-weight: bold;
-            background: transparent; /* Makes the button see-through */
-            border: none; /* Removes the red box */
+            background: transparent; 
+            border: none; 
             color: #c0392b; 
             cursor: pointer;
-            text-decoration: underline; /* Classic subtle link look */
+            text-decoration: underline; 
             display: none; 
             align-self: flex-start;
             transition: opacity 0.1s, transform 0.1s;
         }
 
         .undo-btn:active {
-            opacity: 0.5; /* Fades slightly when tapped */
+            opacity: 0.5; 
             transform: scale(0.95);
         }
 
@@ -502,6 +498,7 @@
             showCompletionUI(logData);
         }
 
+        // --- UPDATED: Formats the text onto two lines ---
         function showCompletionUI(logData) {
             document.getElementById('page').classList.add('completed');
             document.getElementById('done-stamp').style.display = 'block';
@@ -513,8 +510,18 @@
                 const statsDiv = document.getElementById('logged-stats');
                 const dist = logData.distance !== undefined ? logData.distance : '--';
                 
-                if (dist !== '--' || logData.feel) {
-                    statsDiv.innerText = `Logged: ${dist} km ${logData.feel || ''}`;
+                let htmlString = '';
+                if (dist !== '--') {
+                    htmlString += `Logged: ${dist} km`;
+                }
+                if (logData.feel) {
+                    // Adds a line break if the distance was also logged
+                    if (htmlString !== '') htmlString += `<br>`;
+                    htmlString += `Feeling: ${logData.feel}`;
+                }
+
+                if (htmlString !== '') {
+                    statsDiv.innerHTML = htmlString;
                     statsDiv.style.display = 'block';
                 }
             }
