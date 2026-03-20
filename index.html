@@ -118,6 +118,18 @@
             border-radius: 5px;
             transition: all 0.2s;
         }
+        .undo-btn {
+            margin-top: 15px;
+            padding: 5px 15px;
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.1rem;
+            background: transparent;
+            border: none;
+            color: #e74c3c; /* A soft red */
+            cursor: pointer;
+            text-decoration: underline;
+            display: none; /* Hidden by default */
+        }
 
         .complete-btn:active {
             transform: scale(0.95);
@@ -191,7 +203,8 @@
             
             <h1>Today:</h1>
             <div id="workout-display" class="workout">Loading...</div>
-            <button class="complete-btn" onclick="markComplete()">Mark Finished</button>
+            <button class="complete-btn" onclick="markComplete()">Done!</button>
+            <button class="undo-btn" onclick="undoComplete()">Wait, Undo!</button>
 
             <h2>Tomorrow:</h2>
             <div id="tomorrow-display" class="tomorrow-workout">Loading...</div>
@@ -269,10 +282,34 @@
         }
 
         function showCompletionUI() {
+            // Show the stamp and cross out text
             document.getElementById('page').classList.add('completed');
             document.getElementById('done-stamp').style.display = 'block';
-            const btn = document.querySelector('.complete-btn');
-            if(btn) btn.style.display = 'none';
+            
+            // Swap the buttons
+            const completeBtn = document.querySelector('.complete-btn');
+            const undoBtn = document.querySelector('.undo-btn');
+            if(completeBtn) completeBtn.style.display = 'none';
+            if(undoBtn) undoBtn.style.display = 'inline-block';
+        }
+
+        // NEW: The Undo Logic
+        function undoComplete() {
+            const d = new Date();
+            const today = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+            
+            // 1. Erase the memory of finishing the run
+            localStorage.removeItem('completed_' + today);
+            
+            // 2. Remove the stamp and strikethrough
+            document.getElementById('page').classList.remove('completed');
+            document.getElementById('done-stamp').style.display = 'none';
+            
+            // 3. Swap the buttons back
+            const completeBtn = document.querySelector('.complete-btn');
+            const undoBtn = document.querySelector('.undo-btn');
+            if(completeBtn) completeBtn.style.display = 'inline-block';
+            if(undoBtn) undoBtn.style.display = 'none';
         }
 
         // Optional logic for the fidget button if you want it to do more than just CSS
