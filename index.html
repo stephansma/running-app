@@ -118,7 +118,6 @@
             line-height: 1.4;
         }
 
-        /* --- Realistic Ink Stamp (No Border) --- */
         #done-stamp {
             position: absolute;
             top: 50%;
@@ -265,29 +264,7 @@
             margin-top: 15px;
             display: none;
             transform: rotate(-1deg);
-            line-height: 1.4; /* Gives a little breathing room between lines */
-        }
-
-        /* --- Transparent Undo Button --- */
-        .undo-btn {
-            margin-top: 15px;
-            padding: 5px 10px;
-            font-family: 'Indie Flower', cursive;
-            font-size: 1.1rem;
-            font-weight: bold;
-            background: transparent; 
-            border: none; 
-            color: #c0392b; 
-            cursor: pointer;
-            text-decoration: underline; 
-            display: none; 
-            align-self: flex-start;
-            transition: opacity 0.1s, transform 0.1s;
-        }
-
-        .undo-btn:active {
-            opacity: 0.5; 
-            transform: scale(0.95);
+            line-height: 1.4; 
         }
 
         .completed .workout {
@@ -301,7 +278,7 @@
             right: 20px;
             width: 45px;
             height: 45px;
-            background: #87CEEB; 
+            background: #ffeb3b; /* <-- CHANGED TO YELLOW */
             border-radius: 50%;
             border: 2px solid #2c3e50;
             box-shadow: 3px 3px 0px #2c3e50;
@@ -323,8 +300,15 @@
             background: #ffadad; 
         }
 
-        .export-link {
+        .bottom-actions {
             margin-top: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .export-link {
             font-family: 'Indie Flower', cursive;
             font-size: 1.1rem;
             color: #7f8c8d;
@@ -332,7 +316,26 @@
             border: none;
             text-decoration: underline;
             cursor: pointer;
-            align-self: flex-start;
+            padding: 0;
+        }
+
+        .undo-btn {
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: transparent; 
+            border: none; 
+            color: #c0392b; 
+            cursor: pointer;
+            text-decoration: underline; 
+            display: none; 
+            transition: opacity 0.1s, transform 0.1s;
+            padding: 0;
+        }
+
+        .undo-btn:active {
+            opacity: 0.5; 
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -368,12 +371,13 @@
 
             <div id="logged-stats" class="logged-stats"></div>
 
-            <button class="undo-btn" onclick="undoComplete()">Wait, Undo!</button>
-
             <h2 id="day-two-header">Tomorrow:</h2>
             <div id="tomorrow-display" class="tomorrow-workout">Loading...</div>
 
-            <button class="export-link" onclick="exportData()">Export Log 📥</button>
+            <div class="bottom-actions">
+                <button class="export-link" onclick="exportData()">Export Log 📥</button>
+                <button class="undo-btn" onclick="undoComplete()">Wait, Undo! ⏪</button>
+            </div>
         </div>
     </div>
 
@@ -498,7 +502,6 @@
             showCompletionUI(logData);
         }
 
-        // --- UPDATED: Formats the text onto two lines ---
         function showCompletionUI(logData) {
             document.getElementById('page').classList.add('completed');
             document.getElementById('done-stamp').style.display = 'block';
@@ -515,7 +518,6 @@
                     htmlString += `Logged: ${dist} km`;
                 }
                 if (logData.feel) {
-                    // Adds a line break if the distance was also logged
                     if (htmlString !== '') htmlString += `<br>`;
                     htmlString += `Feeling: ${logData.feel}`;
                 }
