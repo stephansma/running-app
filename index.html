@@ -42,7 +42,7 @@
             box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
             width: 85%;
             max-width: 400px;
-            min-height: 480px; /* Slightly taller for the export button */
+            min-height: 480px; 
             position: relative;
             background-image: repeating-linear-gradient(transparent, transparent 30px, var(--line-color) 30px, var(--line-color) 31px);
             line-height: 31px;
@@ -103,12 +103,52 @@
             font-size: 1.5rem;
         }
 
+        /* --- NEW: Wraps the workout text so the stamp stays confined --- */
+        .workout-container {
+            position: relative;
+            width: 100%;
+            min-height: 50px; 
+            margin-bottom: 10px;
+        }
+
         .workout { 
             font-weight: 700; 
             font-size: 1.6rem; 
             color: #1a1a1a; 
             transform: rotate(-1deg); 
             line-height: 1.4;
+        }
+
+        /* --- NEW: Realistic Ink Stamp --- */
+        #done-stamp {
+            position: absolute;
+            top: 50%;
+            left: 45%; /* Slightly off-center for realism */
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 3.5rem; /* Scaled down to fit the text */
+            color: rgba(192, 57, 43, 0.85); /* Slightly translucent dark red */
+            border: 5px solid rgba(192, 57, 43, 0.85);
+            padding: 0px 20px;
+            border-radius: 8px; /* Softer corners */
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            display: none; 
+            pointer-events: none; 
+            z-index: 20;
+            mix-blend-mode: multiply; /* Blends realistic ink over the text behind it */
+            box-shadow: inset 0 0 2px rgba(192, 57, 43, 0.5), 0 0 2px rgba(192, 57, 43, 0.5); /* Slight bleed edge */
+        }
+
+        /* The slam animation */
+        .completed #done-stamp {
+            animation: stamp-slam 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes stamp-slam {
+            0% { transform: translate(-50%, -50%) scale(2.5) rotate(-5deg); opacity: 0; }
+            60% { transform: translate(-50%, -50%) scale(0.9) rotate(-18deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(-15deg); }
         }
 
         .tomorrow-workout {
@@ -134,7 +174,7 @@
         }
 
         .complete-btn {
-            margin-top: 30px;
+            margin-top: 20px;
             padding: 10px 20px;
             font-family: 'Indie Flower', cursive;
             font-size: 1.2rem;
@@ -142,7 +182,7 @@
             border: 2px solid #2c3e50;
             cursor: pointer;
             border-radius: 5px;
-            transition: all 0.2s;
+            transition: all 0.1s;
             align-self: flex-start;
         }
 
@@ -157,10 +197,10 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 15px;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.6);
             padding: 15px;
             border-radius: 8px;
-            border: 1px dashed #7f8c8d;
+            border: 2px dashed #bdc3c7; /* Stronger border to separate the form */
         }
 
         .log-input-row {
@@ -178,6 +218,7 @@
             border-bottom: 2px solid #2c3e50;
             outline: none;
             color: #e74c3c;
+            font-weight: bold;
         }
 
         .emoji-group {
@@ -202,16 +243,25 @@
             filter: grayscale(0%);
         }
 
+        /* --- NEW: Visually Popping Save Log Button --- */
         .save-log-btn {
             font-family: 'Indie Flower', cursive;
-            font-size: 1.1rem;
-            background: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #27ae60; /* Vibrant Green */
             color: #fffef0;
-            border: none;
-            padding: 5px 15px;
+            border: 2px solid #2ecc71;
+            padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
+            box-shadow: 3px 3px 0px rgba(46, 204, 113, 0.3); /* Physical button shadow */
+            transition: all 0.1s;
+        }
+
+        .save-log-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px rgba(46, 204, 113, 0.3);
         }
 
         .logged-stats {
@@ -223,50 +273,28 @@
             transform: rotate(-1deg);
         }
 
+        /* --- NEW: Visually Popping Undo Button --- */
         .undo-btn {
             margin-top: 15px;
             padding: 5px 15px;
             font-family: 'Indie Flower', cursive;
             font-size: 1.1rem;
-            background: transparent;
-            border: none;
-            color: #e74c3c;
+            font-weight: bold;
+            background: #fff0f0; /* Very light red background */
+            border: 2px solid #e74c3c; /* Sharp red border */
+            border-radius: 5px;
+            color: #c0392b;
             cursor: pointer;
-            text-decoration: underline;
+            text-decoration: none; /* Removed underline to look like a button */
             display: none; 
             align-self: flex-start;
+            box-shadow: 2px 2px 0px rgba(231, 76, 60, 0.2);
+            transition: all 0.1s;
         }
 
-        #done-stamp {
-            position: absolute;
-            top: 45%;
-            left: 50%;
-            font-size: 4.5rem; /* Scaled down slightly */
-            color: #c0392b; /* A richer, more realistic ink red */
-            border: 6px solid #c0392b;
-            padding: 5px 25px;
-            border-radius: 12px; /* Softens the harsh corners */
-            font-family: 'Arial Black', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 8px;
-            display: none; 
-            pointer-events: none; 
-            z-index: 20;
-            
-            /* The magic trick for realistic ink */
-            mix-blend-mode: multiply; 
-            opacity: 0.85; 
-        }
-
-        /* Adds a satisfying "slam" animation when it appears */
-        .completed #done-stamp {
-            animation: stamp-slam 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        @keyframes stamp-slam {
-            0% { transform: translate(-50%, -50%) scale(2.5) rotate(-5deg); opacity: 0; }
-            60% { transform: translate(-50%, -50%) scale(0.9) rotate(-18deg); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(-15deg); }
+        .undo-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px rgba(231, 76, 60, 0.2);
         }
 
         .completed .workout {
@@ -302,7 +330,6 @@
             background: #ffadad; 
         }
 
-        /* --- NEW EXPORT BUTTON --- */
         .export-link {
             margin-top: 2.5rem;
             font-family: 'Indie Flower', cursive;
@@ -318,7 +345,6 @@
 </head>
 <body>
     <div class="notebook-page" id="page">
-        <div id="done-stamp">DONE</div>
         <div id="week-display" class="week-marker">Week --</div>
         
         <div class="fidget" id="fidget-btn">🌀</div>
@@ -327,7 +353,11 @@
             <input type="date" id="run-date" class="date-picker">
             
             <h1 id="day-one-header">Today:</h1>
-            <div id="workout-display" class="workout">Loading...</div>
+            
+            <div class="workout-container">
+                <div id="workout-display" class="workout">Loading...</div>
+                <div id="done-stamp">DONE</div>
+            </div>
             
             <button class="complete-btn" onclick="openLogForm()">Mark Finished</button>
 
@@ -507,19 +537,16 @@
             document.querySelectorAll('.emoji-btn')[0].click(); 
         }
 
-        // --- NEW EXPORT LOGIC ---
         function exportData() {
             let csvContent = "Date,Distance (km),Feeling\n";
             let logs = [];
             
-            // Gather all completed runs from Local Storage
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key.startsWith('completed_')) {
                     const dateStr = key.replace('completed_', '');
                     try {
                         const data = JSON.parse(localStorage.getItem(key));
-                        // Convert to date object for sorting
                         logs.push({ 
                             dateObj: new Date(dateStr), 
                             dateStr: dateStr, 
@@ -527,7 +554,6 @@
                             feel: data.feel || '' 
                         });
                     } catch(e) {
-                        // Skip unreadable data
                     }
                 }
             }
@@ -537,15 +563,12 @@
                 return;
             }
 
-            // Sort chronologically
             logs.sort((a, b) => a.dateObj - b.dateObj);
             
-            // Build CSV rows
             logs.forEach(log => {
                 csvContent += `${log.dateStr},${log.distance},${log.feel}\n`;
             });
             
-            // Trigger Download
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -557,7 +580,6 @@
             document.body.removeChild(link);
         }
 
-        // --- Fidget Button Logic ---
         const fidgetBtn = document.getElementById('fidget-btn');
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -598,7 +620,6 @@
         fidgetBtn.addEventListener('mouseup', releaseUp);
         fidgetBtn.addEventListener('mouseleave', releaseUp); 
 
-        // Run on load
         getWorkout();
     </script>
 </body>
