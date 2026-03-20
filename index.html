@@ -2,12 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Run Tracker</title>
+    
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-web.png">
     <link rel="apple-touch-icon" href="icon-iphone.png">
     <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --paper-color: #fffef0;
@@ -20,9 +24,15 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 100vh; 
+            min-height: 100vh;
+            min-height: 100dvh; 
             margin: 0; 
             background: #333; 
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            box-sizing: border-box;
         }
 
         .notebook-page { 
@@ -36,7 +46,7 @@
             position: relative;
             background-image: repeating-linear-gradient(transparent, transparent 30px, var(--line-color) 30px, var(--line-color) 31px);
             line-height: 31px;
-            overflow: hidden; /* Keeps the stamp from overflowing */
+            overflow: hidden;
         }
 
         .notebook-page::before {
@@ -55,26 +65,41 @@
             z-index: 1;
         }
 
+        /* The New Date Picker Styling */
+        .date-picker {
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.4rem;
+            color: #2c3e50;
+            background: transparent;
+            border: none;
+            border-bottom: 2px dashed #7f8c8d;
+            outline: none;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            padding: 0;
+            width: 100%;
+        }
+
+        /* Removes the default ugly calendar icon background on some browsers */
+        .date-picker::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
         h1 { 
             font-family: 'Indie Flower', cursive;
             color: #2c3e50; 
             margin: 0 0 0.5rem 0;
             text-decoration: underline;
             font-size: 2.2rem;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
         }
 
         h2 {
             font-family: 'Indie Flower', cursive;
-            color: #2c3e50;
+            color: #7f8c8d;
             margin: 2rem 0 0.2rem 0;
             font-size: 1.5rem;
-        }
-
-        p#current-date { 
-            font-size: 1.1rem; 
-            color: #7f8c8d; 
-            margin-bottom: 1rem;
         }
 
         .workout { 
@@ -87,7 +112,7 @@
 
         .tomorrow-workout {
             font-size: 1.3rem;
-            color: #1a1a1a;
+            color: #555;
             transform: rotate(1deg);
         }
 
@@ -118,6 +143,12 @@
             border-radius: 5px;
             transition: all 0.2s;
         }
+
+        .complete-btn:active {
+            transform: scale(0.95);
+            background: #e0d9c5;
+        }
+
         .undo-btn {
             margin-top: 15px;
             padding: 5px 15px;
@@ -125,15 +156,10 @@
             font-size: 1.1rem;
             background: transparent;
             border: none;
-            color: #e74c3c; /* A soft red */
+            color: #e74c3c;
             cursor: pointer;
             text-decoration: underline;
-            display: none; /* Hidden by default */
-        }
-
-        .complete-btn:active {
-            transform: scale(0.95);
-            background: #e0d9c5;
+            display: none; 
         }
 
         #done-stamp {
@@ -158,32 +184,28 @@
             opacity: 0.5;
         }
 
-        /* The Fidget Button! */
         .fidget {
             position: absolute;
             bottom: 20px;
             right: 20px;
             width: 45px;
             height: 45px;
-            background: #ffeb3b; /* corn yellow sticker */
+            background: #87CEEB; 
             border-radius: 50%;
             border: 2px solid #2c3e50;
             box-shadow: 3px 3px 0px #2c3e50;
             cursor: pointer;
             z-index: 15;
-            transition: transform 0.05s, box-shadow 0.05s, background 0.05s; /* Sped up the transition */
+            transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
             user-select: none; 
-            
-            /* NEW: Mobile optimizations */
-            -webkit-tap-highlight-color: transparent; /* Kills the ugly gray tap flash */
-            touch-action: manipulation; /* Kills the double-tap zoom delay */
+            -webkit-tap-highlight-color: transparent; 
+            touch-action: manipulation; 
         }
 
-        /* NEW: Changed from :active to a class we control with JavaScript */
         .fidget.pressed {
             transform: translate(3px, 3px) rotate(15deg);
             box-shadow: 0px 0px 0px #2c3e50;
@@ -199,34 +221,66 @@
         <div class="fidget" id="fidget-btn">🌀</div>
 
         <div class="content">
-            <p id="current-date">Loading...</p>
+            <input type="date" id="run-date" class="date-picker">
             
-            <h1>Today:</h1>
+            <h1 id="day-one-header">Today:</h1>
             <div id="workout-display" class="workout">Loading...</div>
-            <button class="complete-btn" onclick="markComplete()">Done!</button>
-
-            <h2>Tomorrow:</h2>
-            <div id="tomorrow-display" class="tomorrow-workout">Loading...</div>
+            <button class="complete-btn" onclick="markComplete()">Mark Finished</button>
             <button class="undo-btn" onclick="undoComplete()">Wait, Undo!</button>
+
+            <h2 id="day-two-header">Tomorrow:</h2>
+            <div id="tomorrow-display" class="tomorrow-workout">Loading...</div>
         </div>
     </div>
 
     <script>
-        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdZddkciE_kDBzdCyG-FyQ6gTqa7DW_WReNlD7aU4_sNw7ZbwKV9VXISPGgGY4-4zJbeu-u51SaLiJ/pub?gid=987654321&single=true&output=csv';
+        const SHEET_URL = 'schedule.csv';
+        const dateInput = document.getElementById('run-date');
+
+        // Set the date picker to the current local date on first load
+        const now = new Date();
+        const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        dateInput.value = localDate.toISOString().split('T')[0];
+
+        // Re-run the app whenever the user picks a new date
+        dateInput.addEventListener('change', getWorkout);
+
+        // Helper to format the UI based on selection
+        function updateHeaders(selectedDateStr) {
+            const todayStr = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+            if (selectedDateStr === todayStr) {
+                document.getElementById('day-one-header').innerText = "Today:";
+                document.getElementById('day-two-header').innerText = "Tomorrow:";
+            } else {
+                document.getElementById('day-one-header').innerText = "Selected:";
+                document.getElementById('day-two-header').innerText = "Next Day:";
+            }
+        }
+
+        // Returns the string formatted perfectly for the CSV (M/D/YYYY)
+        function getFormattedSelectedDate() {
+            const [y, m, d] = dateInput.value.split('-');
+            return parseInt(m) + '/' + parseInt(d) + '/' + y;
+        }
 
         async function getWorkout() {
-            // Get Today
-            const d = new Date();
-            const today = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+            const selectedDateStr = getFormattedSelectedDate();
             
-            // Get Tomorrow
-            const t = new Date(d);
-            t.setDate(t.getDate() + 1); // Automatically handles month/year rollover
-            const tomorrow = (t.getMonth() + 1) + '/' + t.getDate() + '/' + t.getFullYear();
-            
-            document.getElementById('current-date').innerText = "Date: " + today;
+            // Calculate "Next Day"
+            const [y, m, d] = dateInput.value.split('-');
+            const nextDayObj = new Date(y, parseInt(m) - 1, d);
+            nextDayObj.setDate(nextDayObj.getDate() + 1);
+            const nextDayStr = (nextDayObj.getMonth() + 1) + '/' + nextDayObj.getDate() + '/' + nextDayObj.getFullYear();
 
-            if (localStorage.getItem('completed_' + today)) {
+            updateHeaders(selectedDateStr);
+
+            // Reset UI before checking completion
+            document.getElementById('page').classList.remove('completed');
+            document.getElementById('done-stamp').style.display = 'none';
+            document.querySelector('.complete-btn').style.display = 'inline-block';
+            document.querySelector('.undo-btn').style.display = 'none';
+
+            if (localStorage.getItem('completed_' + selectedDateStr)) {
                 showCompletionUI();
             }
 
@@ -243,23 +297,21 @@
                 for (let i = 1; i < rows.length; i++) { 
                     const cols = rows[i].split(',');
                     if (cols.length >= 3) {
-                        if (cols[0].trim() === today) todayMatch = cols;
-                        if (cols[0].trim() === tomorrow) tomorrowMatch = cols;
+                        if (cols[0].trim() === selectedDateStr) todayMatch = cols;
+                        if (cols[0].trim() === nextDayStr) tomorrowMatch = cols;
                     }
                 }
 
-                // Populate Today
                 if (todayMatch) {
                     document.getElementById('week-display').innerText = "Week " + todayMatch[1].trim();
                     const workoutText = todayMatch.slice(2).join(',').replace(/"/g, '').trim();
                     document.getElementById('workout-display').innerText = workoutText;
                 } else {
                     document.getElementById('workout-display').innerText = "Rest Day! ☕";
-                    // If no run today, try to get the week from tomorrow's run so the sticky note isn't blank
                     if(tomorrowMatch) document.getElementById('week-display').innerText = "Week " + tomorrowMatch[1].trim();
+                    else document.getElementById('week-display').innerText = "Relax";
                 }
 
-                // Populate Tomorrow
                 if (tomorrowMatch) {
                     const tomWorkoutText = tomorrowMatch.slice(2).join(',').replace(/"/g, '').trim();
                     document.getElementById('tomorrow-display').innerText = tomWorkoutText;
@@ -275,58 +327,36 @@
         }
 
         function markComplete() {
-            const d = new Date();
-            const today = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
-            localStorage.setItem('completed_' + today, 'true');
+            const selectedDateStr = getFormattedSelectedDate();
+            localStorage.setItem('completed_' + selectedDateStr, 'true');
             showCompletionUI();
         }
 
-        function showCompletionUI() {
-            // Show the stamp and cross out text
-            document.getElementById('page').classList.add('completed');
-            document.getElementById('done-stamp').style.display = 'block';
-            
-            // Swap the buttons
-            const completeBtn = document.querySelector('.complete-btn');
-            const undoBtn = document.querySelector('.undo-btn');
-            if(completeBtn) completeBtn.style.display = 'none';
-            if(undoBtn) undoBtn.style.display = 'inline-block';
-        }
-
-        // NEW: The Undo Logic
         function undoComplete() {
-            const d = new Date();
-            const today = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
-            
-            // 1. Erase the memory of finishing the run
-            localStorage.removeItem('completed_' + today);
-            
-            // 2. Remove the stamp and strikethrough
+            const selectedDateStr = getFormattedSelectedDate();
+            localStorage.removeItem('completed_' + selectedDateStr);
             document.getElementById('page').classList.remove('completed');
             document.getElementById('done-stamp').style.display = 'none';
-            
-            // 3. Swap the buttons back
-            const completeBtn = document.querySelector('.complete-btn');
-            const undoBtn = document.querySelector('.undo-btn');
-            if(completeBtn) completeBtn.style.display = 'inline-block';
-            if(undoBtn) undoBtn.style.display = 'none';
+            document.querySelector('.complete-btn').style.display = 'inline-block';
+            document.querySelector('.undo-btn').style.display = 'none';
         }
 
-        // Optional logic for the fidget button if you want it to do more than just CSS
+        function showCompletionUI() {
+            document.getElementById('page').classList.add('completed');
+            document.getElementById('done-stamp').style.display = 'block';
+            document.querySelector('.complete-btn').style.display = 'none';
+            document.querySelector('.undo-btn').style.display = 'inline-block';
+        }
+
         // --- Fidget Button Logic ---
         const fidgetBtn = document.getElementById('fidget-btn');
-        
-        // Setup the browser's audio engine
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playClickSound() {
-            // Browsers pause audio until the user interacts with the page
             if (audioCtx.state === 'suspended') audioCtx.resume();
-
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
 
-            // Create a quick "pop" or "click" sound
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
             oscillator.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.05);
@@ -336,7 +366,6 @@
 
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-
             oscillator.start();
             oscillator.stop(audioCtx.currentTime + 0.05);
         }
@@ -344,13 +373,8 @@
         function pressDown(e) {
             e.preventDefault(); 
             fidgetBtn.classList.add('pressed');
-            
-            // Play our generated sound!
             playClickSound();
-
-            if (navigator.vibrate) {
-                navigator.vibrate(40); 
-            }
+            if (navigator.vibrate) navigator.vibrate(40); 
         }
 
         function releaseUp(e) {
@@ -358,16 +382,14 @@
             fidgetBtn.classList.remove('pressed');
         }
 
-        // Mobile Touch Events
         fidgetBtn.addEventListener('touchstart', pressDown, { passive: false });
         fidgetBtn.addEventListener('touchend', releaseUp);
         fidgetBtn.addEventListener('touchcancel', releaseUp);
-
-        // Desktop Mouse Events
         fidgetBtn.addEventListener('mousedown', pressDown);
         fidgetBtn.addEventListener('mouseup', releaseUp);
-        fidgetBtn.addEventListener('mouseleave', releaseUp);
+        fidgetBtn.addEventListener('mouseleave', releaseUp); 
 
+        // Run on load
         getWorkout();
     </script>
 </body>
