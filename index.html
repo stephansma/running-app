@@ -42,7 +42,7 @@
             box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
             width: 85%;
             max-width: 400px;
-            min-height: 450px;
+            min-height: 480px; /* Slightly taller for the export button */
             position: relative;
             background-image: repeating-linear-gradient(transparent, transparent 30px, var(--line-color) 30px, var(--line-color) 31px);
             line-height: 31px;
@@ -63,6 +63,9 @@
             position: relative;
             padding-left: 30px; 
             z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .date-picker {
@@ -140,6 +143,7 @@
             cursor: pointer;
             border-radius: 5px;
             transition: all 0.2s;
+            align-self: flex-start;
         }
 
         .complete-btn:active {
@@ -147,7 +151,6 @@
             background: #e0d9c5;
         }
 
-        /* --- NEW LOGGING FORM STYLES --- */
         .log-form {
             margin-top: 15px;
             display: none;
@@ -165,10 +168,10 @@
             color: #2c3e50;
         }
 
-        .duration-input {
+        .distance-input {
             font-family: 'Kalam', cursive;
             font-size: 1.2rem;
-            width: 60px;
+            width: 70px;
             text-align: center;
             background: transparent;
             border: none;
@@ -219,7 +222,6 @@
             display: none;
             transform: rotate(-1deg);
         }
-        /* ------------------------------- */
 
         .undo-btn {
             margin-top: 15px;
@@ -232,6 +234,7 @@
             cursor: pointer;
             text-decoration: underline;
             display: none; 
+            align-self: flex-start;
         }
 
         #done-stamp {
@@ -283,6 +286,19 @@
             box-shadow: 0px 0px 0px #2c3e50;
             background: #ffadad; 
         }
+
+        /* --- NEW EXPORT BUTTON --- */
+        .export-link {
+            margin-top: 2.5rem;
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            background: none;
+            border: none;
+            text-decoration: underline;
+            cursor: pointer;
+            align-self: flex-start;
+        }
     </style>
 </head>
 <body>
@@ -302,7 +318,7 @@
 
             <div class="log-form" id="log-form">
                 <div class="log-input-row">
-                    Time: <input type="number" id="run-duration" class="duration-input" placeholder="0"> mins
+                    Distance: <input type="number" step="0.1" id="run-distance" class="distance-input" placeholder="0.0"> km
                 </div>
                 <div class="emoji-group">
                     <button class="emoji-btn selected" onclick="selectEmoji(this, '🤩')">🤩</button>
@@ -318,13 +334,15 @@
 
             <h2 id="day-two-header">Tomorrow:</h2>
             <div id="tomorrow-display" class="tomorrow-workout">Loading...</div>
+
+            <button class="export-link" onclick="exportData()">Export Log 📥</button>
         </div>
     </div>
 
     <script>
         const SHEET_URL = 'schedule.csv';
         const dateInput = document.getElementById('run-date');
-        let selectedFeeling = '🤩'; // Default feeling
+        let selectedFeeling = '🤩'; 
 
         const now = new Date();
         const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
@@ -357,7 +375,6 @@
 
             updateHeaders(selectedDateStr);
 
-            // Reset UI for new date selection
             document.getElementById('page').classList.remove('completed');
             document.getElementById('done-stamp').style.display = 'none';
             document.querySelector('.complete-btn').style.display = 'inline-block';
@@ -365,17 +382,14 @@
             document.getElementById('log-form').style.display = 'none';
             document.getElementById('logged-stats').style.display = 'none';
 
-            // Check memory for this date
             const savedData = localStorage.getItem('completed_' + selectedDateStr);
             if (savedData) {
-                let parsedLog;
                 try {
-                    parsedLog = JSON.parse(savedData);
+                    const parsedLog = JSON.parse(savedData);
+                    showCompletionUI(parsedLog);
                 } catch(e) {
-                    // Legacy fallback for old "true" string data
-                    parsedLog = { completed: true, duration: '?', feel: '✔️' };
+                    localStorage.removeItem('completed_' + selectedDateStr);
                 }
-                showCompletionUI(parsedLog);
             }
 
             try {
@@ -420,7 +434,6 @@
             }
         }
 
-        // --- NEW LOGGING LOGIC ---
         function openLogForm() {
             document.querySelector('.complete-btn').style.display = 'none';
             document.getElementById('log-form').style.display = 'flex';
@@ -434,16 +447,15 @@
 
         function saveLog() {
             const selectedDateStr = getFormattedSelectedDate();
-            const durationInput = document.getElementById('run-duration').value;
-            const finalDuration = durationInput ? durationInput : '--';
+            const distanceInput = document.getElementById('run-distance').value;
+            const finalDistance = distanceInput ? distanceInput : '--';
 
             const logData = {
                 completed: true,
-                duration: finalDuration,
+                distance: finalDistance,
                 feel: selectedFeeling
             };
 
-            // Save the JSON object to local storage
             localStorage.setItem('completed_' + selectedDateStr, JSON.stringify(logData));
             showCompletionUI(logData);
         }
@@ -455,10 +467,14 @@
             document.getElementById('log-form').style.display = 'none';
             document.querySelector('.undo-btn').style.display = 'inline-block';
 
-            if (logData && logData.duration) {
+            if (logData) {
                 const statsDiv = document.getElementById('logged-stats');
-                statsDiv.innerText = `Logged: ${logData.duration} mins ${logData.feel}`;
-                statsDiv.style.display = 'block';
+                const dist = logData.distance !== undefined ? logData.distance : '--';
+                
+                if (dist !== '--' || logData.feel) {
+                    statsDiv.innerText = `Logged: ${dist} km ${logData.feel || ''}`;
+                    statsDiv.style.display = 'block';
+                }
             }
         }
 
@@ -472,9 +488,58 @@
             document.querySelector('.undo-btn').style.display = 'none';
             document.getElementById('logged-stats').style.display = 'none';
 
-            // Reset form for next time
-            document.getElementById('run-duration').value = '';
+            document.getElementById('run-distance').value = '';
             document.querySelectorAll('.emoji-btn')[0].click(); 
+        }
+
+        // --- NEW EXPORT LOGIC ---
+        function exportData() {
+            let csvContent = "Date,Distance (km),Feeling\n";
+            let logs = [];
+            
+            // Gather all completed runs from Local Storage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('completed_')) {
+                    const dateStr = key.replace('completed_', '');
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        // Convert to date object for sorting
+                        logs.push({ 
+                            dateObj: new Date(dateStr), 
+                            dateStr: dateStr, 
+                            distance: data.distance || '', 
+                            feel: data.feel || '' 
+                        });
+                    } catch(e) {
+                        // Skip unreadable data
+                    }
+                }
+            }
+            
+            if(logs.length === 0) {
+                alert("No runs logged yet! Finish a run to start your history.");
+                return;
+            }
+
+            // Sort chronologically
+            logs.sort((a, b) => a.dateObj - b.dateObj);
+            
+            // Build CSV rows
+            logs.forEach(log => {
+                csvContent += `${log.dateStr},${log.distance},${log.feel}\n`;
+            });
+            
+            // Trigger Download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "My_Running_Log.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // --- Fidget Button Logic ---
